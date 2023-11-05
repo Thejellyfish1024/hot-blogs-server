@@ -37,6 +37,30 @@ async function run() {
         res.send(result)
     })
 
+    app.get('/recentBlogs', async(req,res) =>{
+        const cursor = blogsCollection.find()
+        const result = await cursor.toArray()
+
+        const blogsPostedTime = result.map(blog =>  blog.posted_time)
+        // console.log(blogsPostedTime);
+        let postedTimeArr = blogsPostedTime
+        postedTimeArr.sort(function (a, b) {
+            return a - b;
+        });
+        const recent = postedTimeArr.reverse()
+        // console.log(recent);
+        const recentSixBlogs = recent.slice(0,6)
+        // console.log(recentSixBlogs);
+        const query = {
+            posted_time : {
+                $in : recentSixBlogs
+            }
+        }
+        const recentBlogs = await blogsCollection.find(query).toArray()
+        console.log(recentBlogs);
+        res.send(recentBlogs)
+    })
+
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
