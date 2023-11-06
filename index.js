@@ -57,8 +57,15 @@ async function run() {
             }
         }
         const recentBlogs = await blogsCollection.find(query).toArray()
-        console.log(recentBlogs);
+        // console.log(recentBlogs);
         res.send(recentBlogs)
+    })
+
+    app.get('/:category',async (req,res) =>{
+      const category = req.params.category;
+      const query = {category : category}
+      const result = await blogsCollection.find(query).toArray();
+      res.send(result)
     })
 
     // Send a ping to confirm a successful connection
