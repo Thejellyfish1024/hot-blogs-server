@@ -61,6 +61,13 @@ async function run() {
         res.send(recentBlogs)
     })
 
+    app.get('/blogs/:title', async(req, res) =>{
+      const title = req.params.title.toLowerCase;
+      const query = {title : title}
+      const result = await blogsCollection.findOne(query)
+      res.send(result)
+    })
+
     app.get('/:category',async (req,res) =>{
       const category = req.params.category;
       const query = {category : category}
