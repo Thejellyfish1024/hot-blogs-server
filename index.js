@@ -112,6 +112,13 @@ async function run() {
       const result = await commentsCollection.insertOne(newComment)
       res.send(result)
     })
+    
+    app.get('/comments/:blog_id', async(req, res) =>{
+      const blog_id = req.params.blog_id;
+      const query = {blog_id : blog_id}
+      const result = await commentsCollection.find(query).toArray()
+      res.send(result)
+    })
 
     app.post('/wishlist', async(req,res) =>{
       const myWishlist = req.body;
