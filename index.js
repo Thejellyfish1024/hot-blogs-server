@@ -1,6 +1,6 @@
 const express = require('express')
 const cors = require('cors');
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 require('dotenv').config()
 const app = express()
 const port = process.env.port || 5000
@@ -37,6 +37,8 @@ async function run() {
       const result = await cursor.toArray()
       res.send(result)
     })
+
+    // app.get('/wishlist/:id')
 
     app.get('/blogs',async(req,res) =>{
         const cursor = blogsCollection.find()
@@ -95,6 +97,17 @@ async function run() {
     app.post('/wishlist', async(req,res) =>{
       const myWishlist = req.body;
       const result = await wishlistCollection.insertOne(myWishlist)
+      res.send(result)
+    })
+
+    // delete method
+
+    app.delete('/wishlist/:id', async(req,res) =>{
+      const id = req.params.id;
+      console.log(id);
+      const query = {_id : id};
+      console.log(query);
+      const result = await wishlistCollection.deleteOne(query)
       res.send(result)
     })
 
