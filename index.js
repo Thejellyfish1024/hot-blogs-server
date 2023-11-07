@@ -33,10 +33,10 @@ async function run() {
 
 // get methods
 
-    app.get('/comments', async(req,res) =>{
-      const result = await commentsCollection.find().toArray();
-      res.send(result)
-    })
+    // app.get('/comments', async(req,res) =>{
+    //   const result = await commentsCollection.find().toArray();
+    //   res.send(result)
+    // })
 
     app.get('/wishlist', async (req,res) =>{
       const cursor = wishlistCollection.find()
@@ -134,6 +134,26 @@ async function run() {
       const query = {_id : id};
       // console.log(query);
       const result = await wishlistCollection.deleteOne(query)
+      res.send(result)
+    })
+
+    // update method
+
+    app.put('/blogs/:id', async(req, res) =>{
+      const id = req.params.id;
+      const blog = req.body;
+      const filter = {_id : new ObjectId(id)};
+      const options = {upsert : true};
+      const updatedBlog = {
+        $set : {
+          title : blog.title,
+          img : blog.img,
+          category : blog.category,
+          short_description : blog.short_description,
+          long_description : blog.long_description
+        }
+      }
+      const result = await blogsCollection.updateOne(filter, updatedBlog, options)
       res.send(result)
     })
 
