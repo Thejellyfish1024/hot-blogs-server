@@ -29,8 +29,14 @@ async function run() {
     const database = client.db("hotBlogsDB");
     const blogsCollection = database.collection('blogs');
     const wishlistCollection = database.collection('wishlist')
+    const commentsCollection = database.collection('comments')
 
 // get methods
+
+    app.get('/comments', async(req,res) =>{
+      const result = await commentsCollection.find().toArray();
+      res.send(result)
+    })
 
     app.get('/wishlist', async (req,res) =>{
       const cursor = wishlistCollection.find()
@@ -98,6 +104,12 @@ async function run() {
       // console.log(newBlog);
       const result = await blogsCollection.insertOne(newBlog)
       // console.log(result);
+      res.send(result)
+    })
+
+    app.post('/comments', async(req,res) =>{
+      const newComment = req.body;
+      const result = await commentsCollection.insertOne(newComment)
       res.send(result)
     })
 
