@@ -44,7 +44,6 @@ async function run() {
       res.send(result)
     })
 
-    // app.get('/wishlist/:id')
 
     app.get('/blogs',async(req,res) =>{
         const cursor = blogsCollection.find()
@@ -57,6 +56,31 @@ async function run() {
       const query = {_id : new ObjectId(id)}
       const result = await blogsCollection.findOne(query)
       res.send(result)
+    })
+
+    app.get('/featuredBlogs', async(req,res) =>{
+      const cursor = await blogsCollection.find().toArray();
+
+      const blogDescriptionLength = cursor.map(blog => blog.longDesLength) 
+      // console.log(blogDescriptionLength);
+
+      let sortedDescriptionLength = blogDescriptionLength;
+      sortedDescriptionLength.sort(function(a,b){
+        return a-b;
+      });
+
+      const sortedTopTen = sortedDescriptionLength.reverse().slice(0,10);
+      console.log(sortedTopTen);
+
+      const query ={
+        longDesLength : {
+          $in : sortedTopTen
+        }
+      }
+
+      const result = await blogsCollection.find(query).toArray()
+      res.send(result);
+
     })
 
     app.get('/recentBlogs', async(req,res) =>{
