@@ -7,7 +7,14 @@ const cookieParser = require('cookie-parser');
 const app = express()
 const port = process.env.port || 5000
 
-app.use(cors())
+app.use(cors({
+  origin:[
+    // 'http://localhost:5173',
+    //  'http://localhost:5174',
+    'https://hot-blogs-client.web.app',
+  'https://hot-blogs-client.firebaseapp.com'],
+  credentials:true
+}))
 app.use(express.json())
 app.use(cookieParser())
 
@@ -34,7 +41,7 @@ const verifyToken = async (req, res, next) => {
   }
   jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded) => {
     if (err) {
-      console.log('verify theke error', err);
+      // console.log('verify theke error', err);
       return res.status(401).send({ message: 'Unauthorized' })
     }
     req.user = decoded;
@@ -44,7 +51,7 @@ const verifyToken = async (req, res, next) => {
 
 async function run() {
   try {
-    await client.connect();
+    // await client.connect();
 
     const database = client.db("hotBlogsDB");
     const blogsCollection = database.collection('blogs');
@@ -56,34 +63,41 @@ async function run() {
 
     app.post('/jwt', async (req, res) => {
       const user = req.body;
-      console.log('user for token : ', user);
+      // console.log('user for token : ', user);
       const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {
         expiresIn: '1h'
       })
       res
         .cookie('token', token, {
           httpOnly: true,
-          secure: false,
+          // secure: true,
+          secure: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
+          sameSite:'none',
+          maxAge:60*60*1000
         })
         .send({ success: true })
     })
 
     app.post('/logout', async(req,res) =>{
       const user = req.body;
-      console.log('logging out ', user);
-      res.clearCookie('token', {maxAge: 0}).send({success: 'logged out true'})
+      // console.log('logging out ', user);
+      res.clearCookie('token', {maxAge: 0 ,secure: process.env.NODE_ENV === 'production' ? 'none' : 'strict', sameSite: 'none'}).send({success: 'logged out true'})
     })
 
 
      // get methods
 
-    app.get('/wishlist', async (req, res) => {
+    app.get('/wishlist',verifyToken, async (req, res) => {
+
+      // console.log(req.query?.email);
+      // console.log('user in the valid token', req.user);
       // console.log(req.query.email);
+      // console.log('wishlist get email',req.query.email);
 
       if(req.query.email !== req.user.email){
         return res.status(403).send({message: 'forbidden access'})
       }
-      let query = {}
+      let query = {};
       if(req.query?.email){
         query = {
           email: req.query.email
@@ -204,7 +218,7 @@ async function run() {
     app.delete('/wishlist/:id', async (req, res) => {
       const id = req.params.id;
       // console.log(id);
-      const query = { _id: id };
+      const query = { _id:new ObjectId(id) };
       // console.log(query);
       const result = await wishlistCollection.deleteOne(query)
       res.send(result)
@@ -231,7 +245,7 @@ async function run() {
     })
 
 
-    await client.db("admin").command({ ping: 1 });
+    // await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
   } finally {
     // Ensures that the client will close when you finish/error
